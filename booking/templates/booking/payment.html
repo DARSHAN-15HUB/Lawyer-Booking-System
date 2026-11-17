@@ -1,0 +1,176 @@
+
+{% extends 'booking/base.html' %}
+
+{% block title %}Secure Payment | LegalEase{% endblock %}
+
+{% block extra_css %}
+<style>
+.payment-container {
+    max-width: 600px;
+    margin: 70px auto;
+    padding: 35px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.10);
+    text-align: center;
+}
+
+.payment-container h1 {
+    color: #172554;
+    margin-bottom: 10px;
+}
+
+.payment-container p {
+    color: #64748b;
+}
+
+.payment-details {
+    margin: 30px 0;
+    padding: 22px;
+    background: #f8fafc;
+    border-radius: 12px;
+    text-align: left;
+}
+
+.payment-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin: 15px 0;
+    color: #334155;
+}
+
+.payment-total {
+    border-top: 1px solid #cbd5e1;
+    padding-top: 18px;
+    font-size: 21px;
+    font-weight: 700;
+    color: #172554;
+}
+
+.pay-button {
+    width: 100%;
+    padding: 15px;
+    background: #172554;
+    color: white;
+    border: none;
+    border-radius: 9px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pay-button:hover {
+    background: #263b70;
+}
+
+.secure-note {
+    margin-top: 20px;
+    font-size: 13px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="payment-container">
+
+    <h1>Secure Payment</h1>
+
+    <p>Complete your consultation payment with LegalEase.</p>
+
+    <div class="payment-details">
+
+        <div class="payment-row">
+            <span>Appointment ID</span>
+            <strong>#{{ appointment.id }}</strong>
+        </div>
+
+        <div class="payment-row">
+            <span>Lawyer</span>
+            <strong>{{ appointment.lawyer.user.username }}</strong>
+        </div>
+
+        <div class="payment-row">
+            <span>Consultation Fee</span>
+            <strong>₹{{ payment.amount }}</strong>
+        </div>
+
+        <div class="payment-row payment-total">
+            <span>Total Amount</span>
+            <span>₹{{ payment.amount }}</span>
+        </div>
+
+    </div>
+
+    <button id="pay-button" class="pay-button">
+        Pay ₹{{ payment.amount }} Securely
+    </button>
+
+    <p class="secure-note">
+        <span>🔒</span>
+        Secure payment powered by Razorpay
+    </p>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+const payButton = document.getElementById("pay-button");
+
+payButton.addEventListener("click", function () {
+
+    const options = {
+        key: "{{ razorpay_key_id|escapejs }}",
+
+        amount: "{{ payment.amount|floatformat:2|cut:'.' }}",
+        currency: "INR",
+
+        name: "LegalEase",
+        description: "Lawyer Consultation Payment",
+
+        order_id: "{{ razorpay_order_id|escapejs }}",
+
+        handler: function (response) {
+
+            const form = document.createElement("form");
+
+            form.method = "POST";
+            form.action = "{% url 'verify_payment' payment.id %}";
+
+            const csrf = document.createElement("input");
+            csrf.type = "hidden";
+            csrf.name = "csrfmiddlewaretoken";
+            csrf.value = "{{ csrf_token }}";
+            form.appendChild(csrf);
+
+            for (const key in response) {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = key;
+                input.value = response[key];
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        },
+
+        theme: {
+            color: "#172554"
+        }
+    };
+
+    const razorpay = new Razorpay(options);
+    razorpay.open();
+
+});
+
+</script>
+
+{% endblock %}

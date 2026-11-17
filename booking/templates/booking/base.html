@@ -1,0 +1,42 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}LegalEase | Lawyer Booking{% endblock %}</title>
+
+    {% load static %}
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    {% include 'booking/partials/navbar.html' %}
+
+    <main>
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {% include 'booking/partials/footer.html' %}
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

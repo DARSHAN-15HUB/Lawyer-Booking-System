@@ -1,0 +1,64 @@
+
+{% extends 'booking/base.html' %}
+
+{% block title %}Book Appointment | LegalEase{% endblock %}
+
+{% block content %}
+
+<section class="auth-section">
+
+    <div class="auth-container">
+
+        <div class="auth-heading">
+            <span>LEGAL CONSULTATION</span>
+            <h1>Book Your Appointment</h1>
+            <p>Choose your lawyer and schedule a consultation.</p>
+        </div>
+
+        <form method="POST" class="auth-form">
+
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div class="form-errors">
+                    {{ form.errors }}
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="{{ form.lawyer.id_for_label }}">
+                    Select Lawyer
+                </label>
+                {{ form.lawyer }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.appointment_date.id_for_label }}">
+                    Appointment Date and Time
+                </label>
+                {{ form.appointment_date }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.case_details.id_for_label }}">
+                    Describe Your Legal Issue
+                </label>
+                {{ form.case_details }}
+            </div>
+
+            <button type="submit" class="btn-primary auth-submit">
+                Confirm Appointment
+            </button>
+
+        </form>
+
+        <p class="auth-switch">
+            Need help?
+            <a href="{% url 'lawyer_list' %}">Browse Lawyers</a>
+        </p>
+
+    </div>
+
+</section>
+
+{% endblock %}

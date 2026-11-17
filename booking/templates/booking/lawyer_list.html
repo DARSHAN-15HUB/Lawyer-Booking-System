@@ -1,0 +1,109 @@
+{% extends 'booking/base.html' %}
+
+{% block title %}Find Lawyers | LegalEase{% endblock %}
+
+{% block content %}
+
+<section class="lawyer-list-section">
+
+    <div class="section-heading">
+        <span>OUR LEGAL PROFESSIONALS</span>
+        <h1>Find Your Lawyer</h1>
+        <p>Choose an experienced legal professional for your legal needs.</p>
+    </div>
+
+    <div class="lawyer-list-grid">
+
+        {% for lawyer in lawyers %}
+
+        <div class="lawyer-card">
+
+            <div class="lawyer-image">
+
+                {% if lawyer.profile_image %}
+
+                    <img
+                        src="{{ lawyer.profile_image.url }}"
+                        alt="{{ lawyer.user.username }}"
+                    >
+
+                {% else %}
+
+                    <div class="lawyer-placeholder">
+                        ⚖
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+            <div class="lawyer-details">
+
+                <h2>{{ lawyer.user.username }}</h2>
+
+                <span class="lawyer-specialization">
+                    {{ lawyer.specialization }}
+                </span>
+
+                <p>
+                    <strong>Experience:</strong>
+                    {{ lawyer.experience }} years
+                </p>
+
+                <p>
+                    <strong>Qualification:</strong>
+                    {{ lawyer.qualification }}
+                </p>
+
+                <p class="lawyer-bio">
+                    {{ lawyer.bio|truncatewords:20 }}
+                </p>
+
+                <div class="lawyer-card-bottom">
+
+                    <h3>
+                        ₹{{ lawyer.consultation_fee }}
+                    </h3>
+
+                    {% if user.is_authenticated %}
+
+                        <a href="{% url 'book_appointment' %}"
+                           class="btn-primary">
+                            Book Consultation
+                        </a>
+
+                    {% else %}
+
+                        <a href="{% url 'login' %}"
+                           class="btn-primary">
+                            Login to Book
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-lawyers">
+
+            <h2>No Lawyers Available</h2>
+
+            <p>
+                Lawyer profiles will appear here once
+                they are added by the administrator.
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endblock %}

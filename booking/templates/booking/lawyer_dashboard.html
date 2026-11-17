@@ -1,0 +1,239 @@
+
+{% extends 'booking/base.html' %}
+
+{% block title %}Lawyer Dashboard | LegalEase{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="dashboard-header">
+        <div>
+            <h1>Lawyer Dashboard</h1>
+            <p>Manage your appointments and client requests.</p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD STATISTICS -->
+
+    <div class="dashboard-stats">
+
+        <div class="stat-card">
+            <h3>Total Appointments</h3>
+            <p>{{ total_appointments }}</p>
+        </div>
+
+        <div class="stat-card pending">
+            <h3>Pending</h3>
+            <p>{{ pending_count }}</p>
+        </div>
+
+        <div class="stat-card approved">
+            <h3>Approved</h3>
+            <p>{{ approved_count }}</p>
+        </div>
+
+        <div class="stat-card rejected">
+            <h3>Rejected</h3>
+            <p>{{ rejected_count }}</p>
+        </div>
+
+        <div class="stat-card completed">
+            <h3>Completed</h3>
+            <p>{{ completed_count }}</p>
+        </div>
+
+        <div class="stat-card cancelled">
+            <h3>Cancelled</h3>
+            <p>{{ cancelled_count }}</p>
+        </div>
+
+    </div>
+
+    <!-- SEARCH AND FILTER -->
+
+    <div class="appointment-toolbar">
+
+        <h2>Manage Appointments</h2>
+
+        <form method="GET" class="appointment-filter-form">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Search client username..."
+                value="{{ search_query }}"
+            >
+
+            <select name="status">
+                <option value="">All Statuses</option>
+
+                <option value="PENDING"
+                    {% if selected_status == 'PENDING' %}selected{% endif %}>
+                    Pending
+                </option>
+
+                <option value="APPROVED"
+                    {% if selected_status == 'APPROVED' %}selected{% endif %}>
+                    Approved
+                </option>
+
+                <option value="REJECTED"
+                    {% if selected_status == 'REJECTED' %}selected{% endif %}>
+                    Rejected
+                </option>
+
+                <option value="COMPLETED"
+                    {% if selected_status == 'COMPLETED' %}selected{% endif %}>
+                    Completed
+                </option>
+
+                <option value="CANCELLED"
+                    {% if selected_status == 'CANCELLED' %}selected{% endif %}>
+                    Cancelled
+                </option>
+
+            </select>
+
+            <button type="submit">Search</button>
+
+            <a href="{% url 'lawyer_dashboard' %}">Reset</a>
+
+        </form>
+
+    </div>
+
+    <!-- APPOINTMENT LIST -->
+
+    <div class="appointment-list">
+
+        {% for appointment in appointments %}
+
+            <div class="appointment-card">
+
+                <div class="appointment-card-header">
+
+                    <h3>
+                        {{ appointment.client.username }}
+                    </h3>
+
+                    <span class="status-badge {{ appointment.status|lower }}">
+                        {{ appointment.get_status_display }}
+                    </span>
+
+                </div>
+
+                <div class="appointment-details">
+
+                    <p>
+                        <strong>Appointment ID:</strong>
+                        {{ appointment.id }}
+                    </p>
+
+                    <p>
+                        <strong>Client Email:</strong>
+                        {{ appointment.client.email }}
+                    </p>
+
+                    <p>
+                        <strong>Date:</strong>
+                        {{ appointment.appointment_date|date:"d M Y" }}
+                    </p>
+
+                    <p>
+                        <strong>Time:</strong>
+                        {{ appointment.appointment_date|time:"h:i A" }}
+                    </p>
+
+                    <p>
+                        <strong>Consultation Fee:</strong>
+                        ₹{{ appointment.lawyer.consultation_fee }}
+                    </p>
+
+                    <p>
+                        <strong>Case Details:</strong>
+                        {{ appointment.case_details }}
+                    </p>
+
+                </div>
+
+                <!-- PENDING ACTIONS -->
+
+                {% if appointment.status == 'PENDING' %}
+
+                    <div class="appointment-actions">
+
+                        <form method="POST"
+                              action="{% url 'update_appointment_status' appointment.id %}">
+
+                            {% csrf_token %}
+
+                            <input type="hidden" name="status" value="APPROVED">
+
+                            <button type="submit" class="approve-btn">
+                                Approve
+                            </button>
+
+                        </form>
+
+                        <form method="POST"
+                              action="{% url 'update_appointment_status' appointment.id %}">
+
+                            {% csrf_token %}
+
+                            <input type="hidden" name="status" value="REJECTED">
+
+                            <button type="submit" class="reject-btn">
+                                Reject
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                {% endif %}
+
+                <!-- APPROVED ACTION -->
+
+                {% if appointment.status == 'APPROVED' %}
+
+                    <form method="POST"
+                          action="{% url 'update_appointment_status' appointment.id %}">
+
+                        {% csrf_token %}
+
+                        <input type="hidden" name="status" value="COMPLETED">
+
+                        <button type="submit" class="complete-btn">
+                            Mark as Completed
+                        </button>
+
+                    </form>
+
+                    {% if appointment.meeting_link %}
+                        <p>
+                            <strong>Meeting Link:</strong>
+                            <a href="{{ appointment.meeting_link }}" target="_blank">
+                                Join Meeting
+                            </a>
+                        </p>
+                    {% endif %}
+
+                {% endif %}
+
+            </div>
+
+        {% empty %}
+
+            <div class="empty-appointments">
+                <h3>No appointments found</h3>
+                <p>There are no appointments matching your search or filter.</p>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endblock %}
